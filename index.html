@@ -240,6 +240,11 @@ dl{margin:0}
             <p class="hint">Hər gün rütbə maaşının 1%-i.</p>
           </div>
         </div>
+        <div class="field full">
+          <label for="bonusInput">Birdəfəlik mükafat (paket)</label>
+          <input type="number" id="bonusInput" min="0" step="0.01" inputmode="decimal" placeholder="Məbləği daxil edin, AZN" oninput="calculateSalary()">
+          <p class="hint">Məbləği özünüz yazın. Gəlir vergisi, pensiya və tibbi sığorta bu məbləğə də tətbiq olunur.</p>
+        </div>
       </div>
 
       <aside class="slip" id="slip" aria-label="Maaş vərəqəsi">
@@ -255,6 +260,7 @@ dl{margin:0}
             <div class="row"><dt>Miçman / MAHHXHQ məharət əlavəsi</dt><span class="lead"></span><dd id="resMichmanDegree">0.00 AZN</dd></div>
             <div class="row"><dt>Xüsusi xidmət şəraiti əlavəsi<small id="resSpecialNote"></small></dt><span class="lead"></span><dd id="resSpecialGross">0.00 AZN</dd></div>
             <div class="row"><dt>Dəniz pulu əlavəsi<small id="resSeaNote"></small></dt><span class="lead"></span><dd id="resSeaGross">0.00 AZN</dd></div>
+            <div class="row"><dt>Birdəfəlik mükafat (paket)</dt><span class="lead"></span><dd id="resBonus">0.00 AZN</dd></div>
             <div class="row sum"><dt>Ümumi hərbi məbləğ (Gross)</dt><span class="lead"></span><dd id="resGrossBase">0.00 AZN</dd></div>
           </dl>
           <div class="grp">Tutulur</div>
@@ -413,7 +419,7 @@ function handleRentChange(){
 }
 
 // MAAŞ HESABLAMA (Excel qaydalarına uyğun)
-// Gross = rütbə maaşı + zabit dərəcəsi + miçman dərəcəsi + xüsusi xidmət + dəniz pulu
+// Gross = rütbə maaşı + zabit dərəcəsi + miçman dərəcəsi + xüsusi xidmət + dəniz pulu + birdəfəlik mükafat
 // Gəlir vergisi, pensiya və tibbi sığorta bütün Gross məbləğdən tutulur. Kirayə vergisizdir.
 function calculateSalary(){
   const A = parseFloat($('rankSelect').value) || 0;
@@ -428,7 +434,9 @@ function calculateSalary(){
   const seaDays = parseInt($('seaDaysInput').value) || 0;
   const sea = (seaDays / 100) * A;
 
-  const gross = A + officer + michman + special + sea;
+  const bonus = Math.max(0, parseFloat($('bonusInput').value) || 0);
+
+  const gross = A + officer + michman + special + sea + bonus;
   const tax = gross < 2500 ? gross * 0.14 : 350 + (gross - 2500) * 0.21;
   const pension = gross * 0.03;
   const medical = gross * 0.02;
@@ -450,6 +458,7 @@ function calculateSalary(){
   $('resSpecialNote').textContent = specialNote;
   $('resSeaGross').textContent = formatAZN(sea);
   $('resSeaNote').textContent = seaDays > 0 ? `(${seaDays} gün)` : '';
+  $('resBonus').textContent = formatAZN(bonus);
   $('resGrossBase').textContent = formatAZN(gross);
   $('resIncomeTax').textContent = '-' + formatAZN(tax);
   $('resPension').textContent = '-' + formatAZN(pension);
